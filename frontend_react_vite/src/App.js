@@ -59,6 +59,15 @@ function App() {
       .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
       .join("&");
 
+  // Resolve base API endpoint (allow .env override or fallback)
+  // Uses REACT_APP_API_URL from environment (.env) if present, otherwise defaults to http://localhost:3001 in development.
+  // This enables proper cross-origin API fetch between React (Vite) and FastAPI backend.
+  const BASE_API_URL =
+    process.env.REACT_APP_API_URL ||
+    (window.location.hostname === 'localhost'
+      ? 'http://localhost:3001'
+      : '');
+
   // Fetch metrics from backend
   const fetchMetrics = useCallback(async () => {
     setLoading(true);
@@ -73,8 +82,10 @@ function App() {
       if (!params.search) delete params.search;
 
       const qs = buildQueryString(params);
+      const apiUrl = `${BASE_API_URL}/metrics${qs ? "?" + qs : ""}`;
+
       const resp = await fetch(
-        `/metrics${qs ? "?" + qs : ""}`,
+        apiUrl,
         {
           headers: { Accept: "application/json" },
         }
