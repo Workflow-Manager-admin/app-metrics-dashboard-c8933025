@@ -101,4 +101,83 @@
     padding: 8px 16px;
     font-size: 12px;
   }
+  .summary-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    padding-left: 7vw !important;
+    padding-right: 5vw !important;
+    gap: 12px;
+  }
+  .summary-stats {
+    margin-top: 12px;
+    gap: 1.15rem !important;
+  }
+  .metrics-table-container {
+    padding: 0 !important;
+    border-radius: 8px !important;
+  }
+  .metrics-table th, .metrics-table td {
+    font-size: 0.98em !important;
+    min-width: 92px !important;
+    padding: 0.5em 0.35em !important;
+  }
+  .filter-controls {
+    flex-direction: column !important;
+    gap: 0.7em !important;
+    align-items: stretch !important;
+    padding: 0.8rem 1vw !important;
+  }
+}
+
+/* Custom styles for App Metrics Dashboard */
+.summary-header {
+  width: 100%;
+  box-sizing: border-box;
+}
+.summary-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  min-width: 240px;
+  justify-content: flex-end;
+}
+.metrics-table-container {
+  background: var(--bg-primary);
+  margin: 2rem auto 0 auto;
+  border-radius: 16px;
+  max-width: 1200px;
+  box-shadow: 0 2px 8px #0001;
+}
+.metrics-table th, .metrics-table td {
+  padding: 0.7em 1em;
+  text-align: left;
+  border-bottom: 1.2px solid var(--border-color);
+  font-size: 1.04em;
+}
+.metrics-table th {
+  user-select: none;
+}
+.metrics-table th {
+  background: var(--bg-secondary);
+}
+.metrics-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.metrics-table a.project-link {
+  color: var(--text-secondary);
+  text-decoration: underline;
+}
+.filter-controls input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.24); /* support dark mode */
+}
+/* Style inputs and selects for modern look */
+.filter-controls input,
+.filter-controls select {
+  outline: none;
+  transition: border 0.2s;
+}
+.filter-controls input:focus,
+.filter-controls select:focus {
+  border: 2px solid var(--button-bg);
 }
