@@ -75,7 +75,21 @@ export default function MetricTable({
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={columns.length} style={{ color: "crimson", textAlign: "center" }}>{error}</td>
+                <td colSpan={columns.length} style={{ color: "crimson", textAlign: "center", whiteSpace: "pre-wrap", fontWeight: "bold" }}>
+                  {error}
+                  <br />
+                  <span style={{fontSize:'0.95em', color:'#888'}}>
+                    {error.includes("CORS") && (
+                      <>
+                        <br />
+                        <b>Troubleshooting:</b> This may be a CORS or API URL problem. Open browser dev tools and check the Network tab for errors.<br />
+                        Is the backend running at the expected URL ({window.location.hostname === "localhost" ? "http://localhost:3001" : "production backend"})?<br />
+                        If not, check your API URL configuration and backend accessibility.<br />
+                        If CORS errors persist, ensure that CORS is enabled for your frontend URL on the backend.
+                      </>
+                    )}
+                  </span>
+                </td>
               </tr>
             ) : data?.length === 0 ? (
               <tr>

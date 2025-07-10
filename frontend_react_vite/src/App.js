@@ -61,14 +61,15 @@ function App() {
 
   // Resolve base API endpoint (allow .env override or fallback)
   // Uses REACT_APP_API_URL from environment (.env) if present, otherwise defaults to http://localhost:3001 in development.
-  // This enables proper cross-origin API fetch between React (Vite) and FastAPI backend.
+  // If not on localhost, will attempt to use "/metrics", assuming a reverse proxy or same host in production.
   const BASE_API_URL =
     process.env.REACT_APP_API_URL ||
-    (window.location.hostname === 'localhost'
-      ? 'http://localhost:3001'
-      : '');
+    (window.location.hostname === "localhost"
+      ? "http://localhost:3001"
+      : "");
 
-  // Fetch metrics from backend
+  // More informative error message and log for diagnosis
+  // PUBLIC_INTERFACE
   const fetchMetrics = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -82,21 +83,61 @@ function App() {
       if (!params.search) delete params.search;
 
       const qs = buildQueryString(params);
-      const apiUrl = `${BASE_API_URL}/metrics${qs ? "?" + qs : ""}`;
 
-      const resp = await fetch(
-        apiUrl,
-        {
-          headers: { Accept: "application/json" },
-        }
-      );
-      if (!resp.ok) throw new Error(`Failed to fetch: ${resp.status}`);
-      const data = await resp.json();
+      // Prefer explicit full URL in dev; show the URL for debugging
+      const apiUrl = `${BASE_API_URL}/metrics${qs ? "?" + qs : ""}`;
+      // Debug print
+      if (process.env.NODE_ENV === "development") {
+        // eslint-disable-next-line
+        console.log("[metrics] Fetching metrics from:", apiUrl);
+      }
+
+      const resp = await fetch(apiUrl, {
+        headers: { Accept: "application/json" },
+      });
+
+      // Handle CORS/network issues distinctly
+      if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(
+          `API error: ${resp.status} ${resp.statusText} - ${text}`
+        );
+      }
+      let data;
+      try {
+        data = await resp.json();
+      } catch (err) {
+        throw new Error("API did not return valid JSON.");
+      }
+
+      if (!data || typeof data !== "object") {
+        throw new Error("API response was not an object.");
+      }
+      // Check for expected fields from backend schema
+      if (!("data" in data) || !("summary" in data) || !("total_pages" in data)) {
+        throw new Error(
+          "Response missing required fields (data, summary, total_pages)"
+        );
+      }
       setMetrics(data.data || []);
       setSummary(data.summary || {});
       setTotalPages(data.total_pages || 1);
     } catch (e) {
-      setError("Failed to load metrics.");
+      // Set detailed error for easier diagnosis, also log to console (for CORS, network, 404, etc).
+      const msg =
+        typeof e === "object" && e !== null && "message" in e
+          ? e.message
+          : String(e);
+      setError(
+        `Failed to load metrics: ${msg}${
+          /\bCORS\b/i.test(msg)
+            ? ". Check backend CORS and API URL."
+            : ""
+        }`
+      );
+      // Log full error stack in dev for developers
+      // eslint-disable-next-line
+      if (process.env.NODE_ENV === "development") console.error(e);
       setMetrics([]);
       setSummary(null);
       setTotalPages(1);
